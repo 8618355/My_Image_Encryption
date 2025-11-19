@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>-.-图像加密工具-.-</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        /* 卡片样式优化 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        /* 标题样式优化 */
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 35px;
+            font-size: 28px;
+            font-weight: 600;
+            position: relative;
+        }
+        h1::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 3px;
+            background: #4299e1;
+            margin: 10px auto 0;
+            border-radius: 3px;
+        }
+        h2 {
+            color: #4a5568;
+            margin-bottom: 25px;
+            font-size: 20px;
+            border-left: 4px solid #4299e1;
+            padding-left: 12px;
+            font-weight: 500;
+        }
+        /* 输入框样式优化 */
+        .input-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        input[type="text"]:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66,153,225,0.15);
+            background: white;
+        }
+        /* 上传区域优化 */
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 35px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+        }
+        .upload-area:hover {
+            border-color: #4299e1;
+            background: rgba(66,153,225,0.04);
+        }
+        .upload-area.active {
+            border-color: #48bb78;
+            background: rgba(72,187,120,0.04);
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: #718096;
+            margin-bottom: 12px;
+            transition: color 0.3s ease;
+        }
+        .upload-area:hover .upload-icon {
+            color: #4299e1;
+        }
+        .upload-text {
+            color: #718096;
+            font-size: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        /* 按钮样式优化 */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3182ce;
+            box-shadow: 0 4px 12px rgba(66,153,225,0.2);
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        .btn-disabled {
+            background: #cbd5e1;
+            color: #718096;
+            cursor: not-allowed;
+            opacity: 0.8;
+            transform: none;
+            box-shadow: none;
+        }
+        .download-btn {
+            display: none;
+            margin-top: 18px;
+            background: #48bb78;
+            color: white;
+        }
+        .download-btn:hover {
+            background: #38a169;
+            box-shadow: 0 4px 12px rgba(72,187,120,0.2);
+        }
+        /* 预览区域优化 */
+        .preview-area {
+            margin-top: 25px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #fafafa;
+        }
+        .preview-img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .preview-placeholder {
+            color: #718096;
+            font-size: 15px;
+            text-align: center;
+            padding: 20px;
+        }
+        /* 状态提示优化 */
+        .status-text {
+            margin-top: 12px;
+            font-size: 14px;
+            text-align: center;
+            height: 20px;
+            font-weight: 500;
+        }
+        .status-success {
+            color: #48bb78;
+        }
+        .status-error {
+            color: #e53e3e;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        /* 打赏模块样式 */
+        .reward-section {
+            max-width: 800px;
+            margin: 40px auto 20px;
+            padding: 25px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .reward-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .reward-title {
+            font-size: 22px;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .reward-desc {
+            color: #718096;
+            font-size: 15px;
+        }
+        .reward-qrcodes {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .qrcode-item {
+            text-align: center;
+        }
+        .qrcode-img {
+            width: 180px;
+            height: 180px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+        }
+        .qrcode-name {
+            color: #4a5568;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .reward-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        /* 响应式调整打赏模块 */
+        @media (max-width: 576px) {
+            .reward-qrcodes {
+                gap: 20px;
+            }
+            .qrcode-img {
+                width: 150px;
+                height: 150px;
+            }
+            .reward-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>-.-图像加密工具-.-</h1>
+    <div class="container">
+        <!-- 加密模块 -->
+        <div class="card">
+            <h2>图像加密</h2>
+            <div class="input-group">
+                <label for="encrypt-key">加密密钥（建议长度≥8位）</label>
+                <input type="text" id="encrypt-key" placeholder="请输入加密密钥">
+            </div>
+            <div class="upload-area" id="encrypt-upload">
+                <input type="file" id="encrypt-file" accept="image/*">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击或拖拽上传图像（支持多种格式，建议使用png格式，jpg等有损格式可能会导致图像无法完全还原）</div>
+            </div>
+            <button class="btn btn-primary" id="encrypt-btn" disabled>
+                <span>开始加密</span>
+            </button>
+            <div class="status-text" id="encrypt-status"></div>
+            <div class="preview-area" id="encrypt-preview">
+                <div class="preview-placeholder">加密结果预览（加密后将显示打乱的图像）</div>
+            </div>
+            <button class="btn download-btn" id="encrypt-download">
+                <span>下载加密图像</span>
+            </button>
+        </div>
+
+        <!-- 解密模块 -->
+        <div class="card">
+            <h2>图像解密</h2>
+            <div class="input-group">
+                <label for="decrypt-key">解密密钥</label>
+                <input type="text" id="decrypt-key" placeholder="请输入与加密一致的密钥">
+            </div>
+            <div class="upload-area" id="decrypt-upload">
+                <input type="file" id="decrypt-file" accept="image/*">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击或拖拽上传加密图像（支持多种格式，建议使用png格式，jpg等有损格式可能会导致图像无法完全还原）</div>
+            </div>
+            <button class="btn btn-primary" id="decrypt-btn" disabled>
+                <span>开始解密</span>
+            </button>
+            <div class="status-text" id="decrypt-status"></div>
+            <div class="preview-area" id="decrypt-preview">
+                <div class="preview-placeholder">解密结果预览（正确密钥将还原原图）</div>
+            </div>
+            <button class="btn download-btn" id="decrypt-download">
+                <span>下载解密图像</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 打赏模块 -->
+    <div class="reward-section">
+        <div class="reward-header">
+            <h3 class="reward-title">❤️ 支持开发者</h3>
+            <p class="reward-desc">如果工具对你有帮助，欢迎打赏支持后续优化升级～</p>
+        </div>
+        <div class="reward-qrcodes">
+            <div class="qrcode-item">
+                <img src="https://youke1.picui.cn/s1/2025/11/13/6915e931b1932.png" alt="微信打赏二维码" class="qrcode-img">
+                <p class="qrcode-name">微信支付</p>
+            </div>
+            <div class="qrcode-item">
+                <img src="https://youke1.picui.cn/s1/2025/11/13/6915e96746bbd.jpg" alt="支付宝打赏二维码" class="qrcode-img">
+                <p class="qrcode-name">支付宝支付</p>
+            </div>
+        </div>
+        <div class="reward-footer">
+            感谢你的支持！每一份鼓励都是持续优化的动力～
+        </div>
+    </div>
+
+    <!-- 免责声明模块 -->
+    <div class="reward-section" style="margin-top: 20px; background: #fafafa; border: 1px solid #e2e8f0;">
+        <div class="reward-header">
+            <h3 class="reward-title" style="color: #2d3748; font-size: 20px;">⚠️ 免责声明</h3>
+        </div>
+        <div style="padding: 0 20px; line-height: 1.8; color: #4a5568; font-size: 14px;">
+            <p>1. 本工具仅用于图像加密保护，仅供合法合规的个人或商业用途，用户应确保所处理图像的版权归属及使用权限，不得用于侵犯他人隐私、知识产权等违法违规行为。</p>
+            <p>2. 工具采用客户端本地加密/解密模式，数据不经过第三方服务器传输，但不排除因浏览器漏洞、设备安全问题导致的数据泄露风险，用户应自行做好设备及数据安全防护。</p>
+            <p>3. 尽管工具已优化为无损算法，但受图像格式兼容性、浏览器环境差异等因素影响，可能存在极少数异常情况，建议对重要图像提前备份原始文件。</p>
+            <p>4. 加密密钥由用户自行设置和保管，工具开发者不存储任何密钥信息，若密钥丢失导致无法解密，开发者不承担任何责任。</p>
+            <p>5. 本工具仅提供技术功能支持，不对加密图像的安全性做绝对保证，对于因使用本工具导致的任何直接或间接损失，开发者不承担赔偿责任。</p>
+            <p>6. 用户使用本工具即表示已阅读、理解并同意本免责声明的全部内容，若不同意请立即停止使用。</p>
+	    <p>7. 作者严格遵守相关法律法规，严禁用户使用本工具加密、传输、存储任何涉及违法犯罪、危害国家安全、违背公序良俗的图片内容，一经发现将配合相关部门调查。</p>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------- 核心工具函数（终极修复版） --------------------------
+        function splitImageTo4Blocks(imageData) {
+            const { width, height, data } = imageData;
+            const halfWidth = Math.floor(width / 2);
+            const halfHeight = Math.floor(height / 2);
+            const blockSizes = [
+                { x: 0, y: 0, w: halfWidth, h: halfHeight },
+                { x: halfWidth, y: 0, w: width - halfWidth, h: halfHeight },
+                { x: 0, y: halfHeight, w: halfWidth, h: height - halfHeight },
+                { x: halfWidth, y: halfHeight, w: width - halfWidth, h: height - halfHeight }
+            ];
+            return blockSizes.map(size => getBlockImageData(imageData, size.x, size.y, size.w, size.h));
+        }
+
+        function getBlockImageData(imageData, x, y, w, h) {
+            const { width: originalWidth, height: originalHeight, data: originalData } = imageData;
+            const blockData = new Uint8ClampedArray(w * h * 4);
+
+            for (let row = 0; row < h; row++) {
+                for (let col = 0; col < w; col++) {
+                    const originalX = x + col;
+                    const originalY = y + row;
+                    if (originalX < 0 || originalX >= originalWidth || originalY < 0 || originalY >= originalHeight) {
+                        blockData[(row * w + col) * 4 + 3] = 0;
+                        continue;
+                    }
+                    const originalIdx = (originalY * originalWidth + originalX) * 4;
+                    const blockIdx = (row * w + col) * 4;
+
+                    blockData[blockIdx] = originalData[originalIdx] & 0xFF;
+                    blockData[blockIdx + 1] = originalData[originalIdx + 1] & 0xFF;
+                    blockData[blockIdx + 2] = originalData[originalIdx + 2] & 0xFF;
+                    blockData[blockIdx + 3] = originalData[originalIdx + 3] & 0xFF;
+                }
+            }
+
+            return new ImageData(blockData, w, h);
+        }
+
+        function merge4BlocksToImage(blocks, originalWidth, originalHeight) {
+            const [block1, block2, block3, block4] = blocks;
+            const mergedData = new Uint8ClampedArray(originalWidth * originalHeight * 4);
+            const halfWidth = Math.floor(originalWidth / 2);
+            const halfHeight = Math.floor(originalHeight / 2);
+
+            writeBlockToImage(mergedData, block1, 0, 0, originalWidth, originalHeight, halfWidth, halfHeight);
+            writeBlockToImage(mergedData, block2, halfWidth, 0, originalWidth, originalHeight, originalWidth - halfWidth, halfHeight);
+            writeBlockToImage(mergedData, block3, 0, halfHeight, originalWidth, originalHeight, halfWidth, originalHeight - halfHeight);
+            writeBlockToImage(mergedData, block4, halfWidth, halfHeight, originalWidth, originalHeight, originalWidth - halfWidth, originalHeight - halfHeight);
+
+            return new ImageData(mergedData, originalWidth, originalHeight);
+        }
+
+        function writeBlockToImage(mergedData, block, x, y, originalWidth, originalHeight, blockWidth, blockHeight) {
+            const { data: blockData } = block;
+
+            for (let row = 0; row < blockHeight; row++) {
+                for (let col = 0; col < blockWidth; col++) {
+                    const mergedX = x + col;
+                    const mergedY = y + row;
+                    if (mergedX >= originalWidth || mergedY >= originalHeight || mergedX < 0 || mergedY < 0) continue;
+
+                    const mergedIdx = (mergedY * originalWidth + mergedX) * 4;
+                    const blockIdx = (row * blockWidth + col) * 4;
+
+                    mergedData[mergedIdx] = blockData[blockIdx] & 0xFF;
+                    mergedData[mergedIdx + 1] = blockData[blockIdx + 1] & 0xFF;
+                    mergedData[mergedIdx + 2] = blockData[blockIdx + 2] & 0xFF;
+                    mergedData[mergedIdx + 3] = blockData[blockIdx + 3] & 0xFF;
+                }
+            }
+        }
+
+        // -------------------------- 核心加密/解密算法（完全可逆版） --------------------------
+        async function keyToParamsExtended(key, blockIndex = 0) {
+            const derivedKey = key + `_block_${blockIndex}`;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(derivedKey);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const extractUint32 = (start) => new DataView(new Uint8Array(hashArray.slice(start, start+4)).buffer).getUint32(0);
+            const mapTo = (uint32, min, max) => min + (uint32 / 0xFFFFFFFF) * (max - min);
+            
+            const shuffle = { x0: mapTo(extractUint32(0), 0.005, 0.995), mu: mapTo(extractUint32(4), 3.7, 4.0) };
+            const gravity = { G: mapTo(extractUint32(16),0.5,15), x: mapTo(extractUint32(20),0.1,3), y: mapTo(extractUint32(24),0.1,3), z: mapTo(extractUint32(28),0.05,2), v: extractUint32(0)%256 };
+            return { logisticForShuffle: shuffle, gravity: gravity };
+        }
+
+        function generateLogisticRaw(param, length) {
+            const out = new Float64Array(length);
+            let x = param.x0;
+            for (let i = 0; i < 200; i++) x = param.mu * x * (1 - x);
+            for (let i = 0; i < length; i++) { x = param.mu * x * (1 - x); out[i] = x; }
+            return out;
+        }
+
+        function generateShuffleIndices(imageData, logisticParam) {
+            const pixelCount = imageData.width * imageData.height;
+            const seq = generateLogisticRaw(logisticParam, pixelCount);
+            const idx = Array.from({ length: pixelCount }, (_, i) => i);
+            idx.sort((a, b) => seq[a] - seq[b]);
+            return idx;
+        }
+
+        function scrambleBySort(imageData, logisticParam, indices) {
+            const { data, width, height } = imageData;
+            const pixelCount = width * height;
+            const idx = indices || generateShuffleIndices(imageData, logisticParam);
+            const out = new Uint8ClampedArray(data.length);
+
+            for (let i = 0; i < pixelCount; i++) {
+                const srcIdx = idx[i] * 4;
+                const dstIdx = i * 4;
+                out[dstIdx] = data[srcIdx] & 0xFF;
+                out[dstIdx + 1] = data[srcIdx + 1] & 0xFF;
+                out[dstIdx + 2] = data[srcIdx + 2] & 0xFF;
+                out[dstIdx + 3] = data[srcIdx + 3] & 0xFF;
+            }
+
+            return { imageData: new ImageData(out, width, height), orderIndices: idx };
+        }
+
+        function deshuffleBySort(scrambledData, orderIndices) {
+            const { data, width, height } = scrambledData;
+            const pixelCount = width * height;
+            const inverse = new Array(pixelCount);
+            for (let i = 0; i < pixelCount; i++) inverse[orderIndices[i]] = i;
+            const out = new Uint8ClampedArray(data.length);
+
+            for (let j = 0; j < pixelCount; j++) {
+                const srcIdx = j * 4;
+                const destIdx = inverse[j] * 4;
+                out[srcIdx] = data[destIdx] & 0xFF;
+                out[srcIdx + 1] = data[destIdx + 1] & 0xFF;
+                out[srcIdx + 2] = data[destIdx + 2] & 0xFF;
+                out[srcIdx + 3] = data[destIdx + 3] & 0xFF;
+            }
+
+            return new ImageData(out, width, height);
+        }
+
+        function gravityDiffuse(imageData, params) {
+            const { data, width, height } = imageData;
+            const out = new Uint8ClampedArray(data.length);
+            const M = height, N = width;
+            const temp = new Uint8Array(M * N);
+            const { G, x, y, z } = params;
+
+            for (let i = 0; i < M; i++) {
+                for (let j = 0; j < N; j++) {
+                    const num = G * (x * y * Math.pow(i + 1, 3) + y * z * Math.pow(j + 1, 3) + x * y * z);
+                    const den = Math.pow(x - (i + 1), 2) + Math.pow(y - (j + 1), 2) + z * z;
+                    let val = den !== 0 ? Math.round(num / den) : 0;
+                    temp[i * N + j] = ((val % 256) + 256) % 256;
+                }
+            }
+
+            for (let ch = 0; ch < 3; ch++) {
+                const c = Array.from({ length: M }, () => new Array(N).fill(0));
+                const I = (r, ccol) => data[(r * N + ccol) * 4 + ch] & 0xFF;
+
+                for (let i = 0; i < M; i++) {
+                    for (let j = 0; j < N; j++) {
+                        const t = temp[i * N + j];
+                        if (i === 0 && j === 0) {
+                            c[0][0] = (I(0, 0) ^ t) ^ params.v;
+                        } else if (i === 0) {
+                            c[0][j] = (I(0, j) ^ t) ^ c[0][j - 1];
+                        } else if (j === 0) {
+                            c[i][0] = (I(i, 0) ^ t) ^ c[i - 1][0];
+                        } else {
+                            c[i][j] = (I(i, j) ^ t) ^ c[i - 1][j] ^ c[i][j - 1];
+                        }
+                        c[i][j] = c[i][j] & 0xFF;
+                    }
+                }
+
+                for (let i = 0; i < M; i++) {
+                    for (let j = 0; j < N; j++) {
+                        out[(i * N + j) * 4 + ch] = c[i][j];
+                    }
+                }
+            }
+
+            for (let i = 0; i < M * N; i++) {
+                out[i * 4 + 3] = data[i * 4 + 3] & 0xFF;
+            }
+            return new ImageData(out, width, height);
+        }
+
+        function gravityUndiffuse(diffusedImageData, params) {
+            const { data, width, height } = diffusedImageData;
+            const out = new Uint8ClampedArray(data.length);
+            const M = height, N = width;
+            const temp = new Uint8Array(M * N);
+            const { G, x, y, z } = params;
+
+            for (let i = 0; i < M; i++) {
+                for (let j = 0; j < N; j++) {
+                    const num = G * (x * y * Math.pow(i + 1, 3) + y * z * Math.pow(j + 1, 3) + x * y * z);
+                    const den = Math.pow(x - (i + 1), 2) + Math.pow(y - (j + 1), 2) + z * z;
+                    let val = den !== 0 ? Math.round(num / den) : 0;
+                    temp[i * N + j] = ((val % 256) + 256) % 256;
+                }
+            }
+
+            for (let ch = 0; ch < 3; ch++) {
+                const c = Array.from({ length: M }, (_, i) => 
+                    Array.from({ length: N }, (_, j) => data[(i * N + j) * 4 + ch] & 0xFF)
+                );
+                const Iout = Array.from({ length: M }, () => new Array(N).fill(0));
+
+                for (let i = 0; i < M; i++) {
+                    for (let j = 0; j < N; j++) {
+                        const t = temp[i * N + j];
+                        if (i === 0 && j === 0) {
+                            Iout[0][0] = (c[0][0] ^ params.v) ^ t;
+                        } else if (i === 0) {
+                            Iout[0][j] = (c[0][j] ^ c[0][j - 1]) ^ t;
+                        } else if (j === 0) {
+                            Iout[i][0] = (c[i][0] ^ c[i - 1][0]) ^ t;
+                        } else {
+                            Iout[i][j] = (c[i][j] ^ c[i - 1][j] ^ c[i][j - 1]) ^ t;
+                        }
+                        Iout[i][j] = Iout[i][j] & 0xFF;
+                    }
+                }
+
+                for (let i = 0; i < M; i++) {
+                    for (let j = 0; j < N; j++) {
+                        out[(i * N + j) * 4 + ch] = Iout[i][j];
+                    }
+                }
+            }
+
+            for (let i = 0; i < M * N; i++) {
+                out[i * 4 + 3] = data[i * 4 + 3] & 0xFF;
+            }
+            return new ImageData(out, width, height);
+        }
+
+        async function encryptSingleBlock(blockData, key, blockIndex) {
+            const params = await keyToParamsExtended(key, blockIndex);
+            const indices = generateShuffleIndices(blockData, params.logisticForShuffle);
+            const shuffleResult = scrambleBySort(blockData, params.logisticForShuffle, indices);
+            return gravityDiffuse(shuffleResult.imageData, params.gravity);
+        }
+
+        async function decryptSingleBlock(blockData, key, blockIndex) {
+            const params = await keyToParamsExtended(key, blockIndex);
+            const undiffusedData = gravityUndiffuse(blockData, params.gravity);
+            const indices = generateShuffleIndices(blockData, params.logisticForShuffle);
+            return deshuffleBySort(undiffusedData, indices);
+        }
+
+        async function encryptImage(imageData, key) {
+            const blocks = splitImageTo4Blocks(imageData);
+            const originalWidth = imageData.width;
+            const originalHeight = imageData.height;
+
+            const encryptedBlocks = [];
+            for (let i = 0; i < 4; i++) {
+                encryptedBlocks.push(await encryptSingleBlock(blocks[i], key, i));
+            }
+
+            const mergedEncryptedData = merge4BlocksToImage(encryptedBlocks, originalWidth, originalHeight);
+            return { imageData: mergedEncryptedData };
+        }
+
+        async function decryptImage(encryptedImageData, key) {
+            const blocks = splitImageTo4Blocks(encryptedImageData);
+            const originalWidth = encryptedImageData.width;
+            const originalHeight = encryptedImageData.height;
+
+            const decryptedBlocks = [];
+            for (let i = 0; i < 4; i++) {
+                decryptedBlocks.push(await decryptSingleBlock(blocks[i], key, i));
+            }
+
+            return merge4BlocksToImage(decryptedBlocks, originalWidth, originalHeight);
+        }
+
+        // -------------------------- 前端交互逻辑（保持原体验） --------------------------
+        function initUploadArea(uploadId, fileInputId, onFileSelect) {
+            const uploadArea = document.getElementById(uploadId);
+            const fileInput = document.getElementById(fileInputId);
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('active'); });
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('active'));
+            uploadArea.addEventListener('drop', e => {
+                e.preventDefault();
+                uploadArea.classList.remove('active');
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type.startsWith('image/')) {
+                        fileInput.files = e.dataTransfer.files;
+                        onFileSelect(file);
+                    } else {
+                        showStatus(uploadId.replace('upload', 'status'), '请上传图像文件', 'error');
+                    }
+                }
+            });
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    onFileSelect(fileInput.files[0]);
+                }
+            });
+        }
+
+        function showStatus(statusId, text, type) {
+            const statusEl = document.getElementById(statusId);
+            statusEl.textContent = text;
+            statusEl.className = `status-text status-${type}`;
+            setTimeout(() => {
+                statusEl.textContent = '';
+                statusEl.className = 'status-text';
+            }, 3000);
+        }
+
+        function loadImageToImageData(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    img.src = e.target.result;
+                    img.crossOrigin = 'anonymous';
+                    img.style.imageRendering = 'pixelated';
+                };
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    try {
+                        resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                    } catch (err) {
+                        reject(new Error('图像加载失败：' + err.message));
+                    }
+                };
+                img.onerror = () => reject(new Error('图像格式错误或无法加载'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function imageDataToBlob(imageData, format = 'image/png', quality = 1.0) {
+            return new Promise(resolve => {
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
+                canvas.toBlob(resolve, format, quality);
+            });
+        }
+
+        function initEncryptModule() {
+            const keyInput = document.getElementById('encrypt-key');
+            const encryptBtn = document.getElementById('encrypt-btn');
+            const previewArea = document.getElementById('encrypt-preview');
+            const downloadBtn = document.getElementById('encrypt-download');
+            let selectedFile = null, processedBlob = null;
+
+            initUploadArea('encrypt-upload', 'encrypt-file', file => {
+                selectedFile = file;
+                updateBtnStatus();
+                const previewImg = document.createElement('img');
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.className = 'preview-img';
+                previewArea.innerHTML = '';
+                previewArea.appendChild(previewImg);
+            });
+
+            function updateBtnStatus() {
+                encryptBtn.disabled = !keyInput.value.trim() || !selectedFile;
+            }
+            keyInput.addEventListener('input', updateBtnStatus);
+
+            encryptBtn.addEventListener('click', async () => {
+                const key = keyInput.value.trim();
+                if (!key || !selectedFile) return;
+
+                encryptBtn.disabled = true;
+                encryptBtn.textContent = '加密中...';
+                downloadBtn.style.display = 'none';
+
+                try {
+                    const imageData = await loadImageToImageData(selectedFile);
+                    const result = await encryptImage(imageData, key);
+                    const blob = await imageDataToBlob(result.imageData, selectedFile.type || 'image/png', 1.0);
+                    processedBlob = blob;
+
+                    const previewImg = document.createElement('img');
+                    previewImg.src = URL.createObjectURL(blob);
+                    previewImg.className = 'preview-img';
+                    previewArea.innerHTML = '';
+                    previewArea.appendChild(previewImg);
+
+                    downloadBtn.style.display = 'block';
+                    showStatus('encrypt-status', '加密成功！', 'success');
+                } catch (err) {
+                    showStatus('encrypt-status', '加密失败：' + err.message, 'error');
+                    console.error('加密错误：', err);
+                } finally {
+                    encryptBtn.disabled = false;
+                    encryptBtn.textContent = '开始加密';
+                }
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                if (!processedBlob) return;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(processedBlob);
+                a.download = `encrypted_${selectedFile.name}`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+        }
+
+        function initDecryptModule() {
+            const keyInput = document.getElementById('decrypt-key');
+            const decryptBtn = document.getElementById('decrypt-btn');
+            const previewArea = document.getElementById('decrypt-preview');
+            const downloadBtn = document.getElementById('decrypt-download');
+            let selectedFile = null, processedBlob = null;
+
+            initUploadArea('decrypt-upload', 'decrypt-file', file => {
+                selectedFile = file;
+                updateBtnStatus();
+                const previewImg = document.createElement('img');
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.className = 'preview-img';
+                previewArea.innerHTML = '';
+                previewArea.appendChild(previewImg);
+            });
+
+            function updateBtnStatus() {
+                decryptBtn.disabled = !keyInput.value.trim() || !selectedFile;
+            }
+            keyInput.addEventListener('input', updateBtnStatus);
+
+            decryptBtn.addEventListener('click', async () => {
+                const key = keyInput.value.trim();
+                if (!key || !selectedFile) return;
+
+                decryptBtn.disabled = true;
+                decryptBtn.textContent = '解密中...';
+                downloadBtn.style.display = 'none';
+
+                try {
+                    const imageData = await loadImageToImageData(selectedFile);
+                    const result = await decryptImage(imageData, key);
+                    const blob = await imageDataToBlob(result, selectedFile.type || 'image/png', 1.0);
+                    processedBlob = blob;
+
+                    const previewImg = document.createElement('img');
+                    previewImg.src = URL.createObjectURL(blob);
+                    previewImg.className = 'preview-img';
+                    previewArea.innerHTML = '';
+                    previewArea.appendChild(previewImg);
+
+                    downloadBtn.style.display = 'block';
+                    showStatus('decrypt-status', '解密成功！', 'success');
+                } catch (err) {
+                    showStatus('decrypt-status', '解密失败：' + err.message + '（可能是密钥错误）', 'error');
+                    console.error('解密错误：', err);
+                } finally {
+                    decryptBtn.disabled = false;
+                    decryptBtn.textContent = '开始解密';
+                }
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                if (!processedBlob) return;
+                const originalName = selectedFile.name.replace('encrypted_', '');
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(processedBlob);
+                a.download = `decrypted_${originalName}`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initEncryptModule();
+            initDecryptModule();
+        });
+    </script>
+</body>
+</html>
